@@ -1,65 +1,99 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import React from 'react'
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+import SideBar from '../components/SideBar';
+import Slider from '../components/Slider';
+import AnimeList from '../components/AnimeList';
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+import {getMovie, getCatagories} from '../resourses/animeData';
+class Home extends React.Component {
+  static async getInitialProps(){
+    const anime = await getMovie();
+    const catagories = await getCatagories();
+    const images = anime.map( a =>({
+       id:'image-' + `${a.id}`,
+        url:a.cover,
+      name: a.name}));
+    return {
+      anime,
+      images,
+      catagories
+    }
+  };
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+  state={
+    filter: 'all'
+  }
+ /* constructor(props)
+  {
+    super(props);
+    this.state ={
+      anime:[]
+    }
+  }
+  //called when comp is mounted
+  async componentDidMount(){
+    const anime = await getMovie();
+    this.setState({anime});
+  }
+  componentDidMount(){
+    getMovie().then(anime=>{
+      this.setState({anime})
+    }).catch(err=>{
+      console.log(err);
+    });
+  }*/
+  changeCategoryHandler = category =>{
+    console.log(category);
+      this.setState({filter: category});
+  }
+  filterMovieHandler = (movie)=>{
+    const {filter} = this.state;
+    if(filter === 'all')
+    {
+      return movie
+    }
+    return movie.filter(m=> {return(m.genre && m.genre.includes(filter))});
+  }
+  render(){
+    const { anime, images, catagories } = this.props ;
+  
+  /*const [anime,SetAnime] = React.useState([]);
+  //called when 2nd parameter changes
+  React.useEffect(()=>{
+    const fetchData = async ()=>{
+      const anime = await getMovie();
+      SetAnime(anime);
+    }
+    fetchData();
+  },[]);*/
+ return( 
+ <div>
+  <div className="container p-5">
+    <div className="row">
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+      <div className="col-lg-3">
+      
+        <SideBar 
+        activeCategory = {this.state.filter}
+        changeCategory ={this.changeCategoryHandler}
+        catagories ={catagories}/>
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+      </div>
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+      <div className="col-lg-9">
+        <Slider images ={images}/>
 
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+        <div className="row">
+          <AnimeList anime={ this.filterMovieHandler(anime)}/>
         </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
+      </div>
     </div>
-  )
+  </div>
+
+
+  </div>
+)
 }
+}
+
+export default Home
