@@ -1,16 +1,22 @@
 const next = require("next");
+const  nextBuild = require('next/dist/build');
 const express = require("express");
-const dev = process.env.NODE_ENV !== "production";
+const { argv } = require('process');
+const config = argv[2].split("=")[1]
+const dev = config !== "production";
+console.log(config,argv,"dev ",process.env.NODE_ENV);
 const app = next({ dev });
 const handle = app.getRequestHandler();
 const filePath = "./data.json";
 const fs = require("fs");
 const path = require("path");
 const movieData = require(filePath);
+const server = express();
+const PORT = process.env.PORT || 3000;
+server.use(express.json());
+// if(dev){
 app.prepare().then(() => {
-  const server = express();
-  const PORT = process.env.PORT || 3000;
-  server.use(express.json());
+
   //handling all thee request coming to server from different pages
   server.get("/api/v1/movie", (req, res) => {
     return res.json(movieData);
@@ -69,3 +75,10 @@ app.prepare().then(() => {
     console.log(`server is running at port ${PORT}`);
   });
 });
+// }else{
+//   server.listen(process.env.PORT, async () => {
+//     console.log('NextJS is now building...');
+//     await nextBuild(path.join(__dirname, '../'));
+//     process.exit();
+//   });
+// }
